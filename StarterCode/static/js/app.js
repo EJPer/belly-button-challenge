@@ -42,51 +42,85 @@ function buildmetaData(x) {
   d3.json(url).then((data) => {
   
   var meta = data.metadata;
-  
+  console.log(meta)
   var metaArray = meta.filter(xObj => xObj.id == x);
-
+  console.log(metaArray)
   var result = metaArray[0];
    
-  console.log(result);
+  console.log(result.id);
 
   var PANEL = d3.select('#sample-metadata');
   
-  PANEL.html('');
+  PANEL.html(``);
 
 //Object.entries, you are going to use panel.append() 
+  PANEL.append(metaArray.id)
+ 
+
 
 });
 }
 
 function charts(chart) {
   d3.json(url).then((data) => {
-  
+
     var sample = data.samples;
     
     var sampleArray = sample.filter(xObj => xObj.id == chart);
-  
-    var result = sampleArray[0];
-     
-    console.log(result);
+   
+    var idsOtu = sample.otu_labels;
     
-    var layoutBar = {
+    var result = sampleArray[0];
+    
+    var sampleBarData = sampleArray.sample_values
+    
 
+   testX = result.sample_values.slice(0,10).reverse();
+   //testY = result.otu_ids.slice(0,10).toString();
+   TestYString = String.valueOf(result.otu_ids.slice(0,10).reverse())
+
+   testLabels = result.otu_labels.slice(0,10);
+  
+  console.log(testX)
+  console.log(TestYString)
+  console.log(testLabels)  
+
+    var layoutBar = {
+      title: "Top 10 Sample Values"
 
 
     }
 
    var dataBar = {
-
+    x: testX,
+    y:TestYString,
+    labels: testLabels,
+    type: "bar",
+    orientation: 'h'
 
    } 
 
    Plotly.newPlot('bar',[dataBar],layoutBar );
 
    var layoutBubble = {
+    title: 'Otu Ids vs Sample Value',
+    xaxis:{title: 'Otu Ids'},
+    yaxis:{title: 'Sample Value'},
 
-   }
+   };
 
    var dataBubble = {
+    x: result.otu_ids,
+    y: result.sample_values,
+    mode: 'markers',
+    marker: {
+      size: result.sample_values,
+      color: result.otu_ids,
+      colorscale:'Viridis'
+
+    },
+    type: 'scatter',
+    labels: result.otu_ids
 
 
    }
@@ -98,7 +132,7 @@ function charts(chart) {
 function optionChanged(value) {
   buildmetaData(value);
   charts(value);
-
+  
 }
 
 
@@ -120,40 +154,4 @@ function optionChanged(value) {
 
 
 
-  ///attempt 1
-  //   let trace1 = {
-  //     x: reversedData[0].id,
-  //     y: reversedData[0].sample_values[1],
-  //     text: reversedData[0].otu_labels[1],
-  //     type:'bar',
-  //     orientation: "h"
-
-  //   };
-    
-  //   //apply layout
-  //   let layout = {
-  //     title: 'Sample Values per ID',
-  //     margin:{
-  //       l: 500,
-  //       r: 500,
-  //       t: 500,
-  //       b: 500
-  //     }
-
-  //   };
-    
-  //   console.log(reversedData[0])
-  //   console.log(reversedData[0].sample_values[1])
-  //   console.log(reversedData[0].otu_ids[1])
-  //   console.log(reversedData[0].otu_labels[1])
-    
-  //   //trace data array
-  //   let traceData = [trace1];
-
-  //   Plotly.newPlot("bar", traceData, layout);
-
-  // });
-
-//Horizontal bar Chart 
-
-
+  
