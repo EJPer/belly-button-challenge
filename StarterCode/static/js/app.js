@@ -83,10 +83,9 @@ function charts(chart) {
 
    testX = result.sample_values.slice(0,10).reverse();
    testY = result.otu_ids;
-   TestYString = String.valueOf(result.otu_ids.slice(0,10).reverse())
-
    testLabels = result.otu_labels;
   
+  otu_w_text = testY.map(num => 'OTU' + num)
   console.log(testX)
   console.log(TestYString)
   console.log(String.valueOf(result.otu_ids.slice(0,10).reverse()))  
@@ -99,7 +98,7 @@ function charts(chart) {
 
    var dataBar = {
     x: testX,
-    y:TestYString,
+    y: otu_w_text,
     labels: result.otu_labels,
     text: result.otu_labels,
     type: "bar",
