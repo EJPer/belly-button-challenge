@@ -53,10 +53,16 @@ function buildmetaData(x) {
   
   PANEL.html(``);
 
-//Object.entries, you are going to use panel.append() 
-  PANEL.append(metaArray.id)
- 
 
+  //adding text for meta
+  for(key in result){
+    PANEL.append("h5").text(`${key.toUpperCase()}: ${result[key]}`)
+  }  ;
+
+
+
+
+ 
 
 });
 }
@@ -76,14 +82,14 @@ function charts(chart) {
     
 
    testX = result.sample_values.slice(0,10).reverse();
-   //testY = result.otu_ids.slice(0,10).toString();
+   testY = result.otu_ids;
    TestYString = String.valueOf(result.otu_ids.slice(0,10).reverse())
 
-   testLabels = result.otu_labels.slice(0,10);
+   testLabels = result.otu_labels;
   
   console.log(testX)
   console.log(TestYString)
-  console.log(testLabels)  
+  console.log(String.valueOf(result.otu_ids.slice(0,10).reverse()))  
 
     var layoutBar = {
       title: "Top 10 Sample Values"
@@ -94,7 +100,8 @@ function charts(chart) {
    var dataBar = {
     x: testX,
     y:TestYString,
-    labels: testLabels,
+    labels: result.otu_labels,
+    text: result.otu_labels,
     type: "bar",
     orientation: 'h'
 
@@ -116,11 +123,14 @@ function charts(chart) {
     marker: {
       size: result.sample_values,
       color: result.otu_ids,
-      colorscale:'Viridis'
+      colorscale:'Viridis',
+      
 
     },
+    text:result.otu_labels,
     type: 'scatter',
-    labels: result.otu_ids
+    labels: result.otu_labels,
+  
 
 
    }
