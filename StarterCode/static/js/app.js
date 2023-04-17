@@ -1,161 +1,122 @@
 //Loading in Data//
 
 //url
-const url = 'https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json';
+const url = 'http://127.0.0.1:5000/api/v1.0/main';
 
-function init() {
-  d3.json(url).then(function(data) {
+//reformat data into seperate lists:
+function processdata(jsondata, postivedata,neutraldata, negativedata) { 
+  //positivedata,neutraldata,negativedata -> empty arrays
+  //jsondata -> a dictionary in the form 
+  // {
+  //   "airline": "Southwest", 
+  //   "sentiment": "negative", 
+  //   "time": "08:09:14", 
+  //   "timezone": "Pacific Time (US & Canada)", 
+  //   "tweet": 135
+  // }
+
+  var [hours, minutes, seconds] = jsondata.time.split(":");
+  var tweet_time = new Date(Date.UTC(1970,5,7,hours,minutes,seconds))
+  // var tweet_time = new Date();
+  // tweet_time.setHours(hours);
+  // tweet_time.setMinutes(minutes);
+  // tweet_time.setSeconds(seconds);
+
+  datapoint = [tweet_time, jsondata.tweet]
+
+  if (jsondata.sentiment === 'positive' ) {
+    postivedata.push(datapoint);
+  } else if (jsondata.sentiment === 'negative' ){
+    negativedata.push(datapoint);
+  } else if (jsondata.sentiment === 'neutral'){
+    neutraldata.push(datapoint);
+  }
+
+
   
-    console.log(data.samples)
-  
-    //array to hold Id names:
-    id_names = []
-  
-    //for loop to capture names
-    for (let i = 0 ; i < data.samples.length; i++){
-    let id_row = data.samples[i].id
+};
+
+
+//Loop created if statment through the dataset
+function formatForApex(jsondata){
+  //set up empty list
+  postivearray = []
+  negativearray = []
+  neutralarray = []
+
+  //loop and push to array
+  for (var i = 0 ; i<jsondata.length; i++) {
+    processdata(jsondata[i],postivearray, negativearray, neutralarray)
     
-    id_names.push(id_row)
-  
-    }
-    console.log(id_names)
-    
-    selector = d3.select('#selDataset');
-      for (let i = 0; i<id_names.length; i++)
-      selector.append('option').text(id_names[i]).property("value", id_names[i])
-  
-    let dropdownMenu = d3.select('#selDataset');
-    
-    let dataset = dropdownMenu.property("value");
-    
-    first_row = data.samples[0].id;
-    
-    buildmetaData(first_row);
-    charts(first_row);
-    })
-   
+  };
+
+  return [{"name": 'positive',
+          "data" :postivearray},
+          {"name": 'negative',
+            "data":  negativearray},
+          {"name": 'neutral',
+            "data": neutralarray}
+         ]
+
+        
 }
 
-init();
+d3.json(url).then(result => {
+  var formattedData = formatForApex(result);
+  console.log(formattedData);
 
-function buildmetaData(x) {
-  d3.json(url).then((data) => {
+  var options = {
+    series:formattedData,
+    chart:{
+      height:300,//NOTE: this refers to the length of tweet we can expect
+      type:'scatter',
+      zoom:{
+        enabled:true,
+        type:'xy'
+      }
+    },
+    xaxis:{
+      type: 'datetime',
+      datetimeFormat: 'HH:mm:ss',
+      tick: {
+        interval: 60*60*1000,
+        format:'HH:mm:ss'
+      }
+    },
+    yaxis:{
+      tickAmount:7
+    }
+  };
   
-  var meta = data.metadata;
-  console.log(meta)
-  var metaArray = meta.filter(xObj => xObj.id == x);
-  console.log(metaArray)
-  var result = metaArray[0];
-   
-  console.log(result.id);
-
-  var PANEL = d3.select('#sample-metadata');
-  
-  PANEL.html(``);
+  var chart = new ApexCharts(document.querySelector("#chart"),options);
+  chart.render();
 
 
-  //adding text for meta
-  for(key in result){
-    PANEL.append("h5").text(`${key.toUpperCase()}: ${result[key]}`)
-  }  ;
-
-
-
-
- 
 
 });
-}
 
-function charts(chart) {
-  d3.json(url).then((data) => {
 
-    var sample = data.samples;
-    
-    var sampleArray = sample.filter(xObj => xObj.id == chart);
-   
-    var idsOtu = sample.otu_labels;
-    
-    var result = sampleArray[0];
-    
-    var sampleBarData = sampleArray.sample_values
-    
 
-   testX = result.sample_values.slice(0,10).reverse();
-   testY = result.otu_ids;
-   TestYString = String.valueOf(result.otu_ids.slice(0,10).reverse())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
-   testLabels = result.otu_labels;
-  
-  otu_w_text = testY.map(num => 'OTU' + num)
-  console.log(testX)
-  console.log(TestYString)
-  console.log(String.valueOf(result.otu_ids.slice(0,10).reverse()))  
-
-    var layoutBar = {
-      title: "Top 10 Sample Values"
-
-
-    }
-
-   var dataBar = {
-    x: testX,
-    y: otu_w_text,
-    labels: result.otu_labels,
-    text: result.otu_labels,
-    type: "bar",
-    orientation: 'h'
-
-   } 
-
-   Plotly.newPlot('bar',[dataBar],layoutBar );
-
-   var layoutBubble = {
-    title: 'Otu Ids vs Sample Value',
-    xaxis:{title: 'Otu Ids'},
-    yaxis:{title: 'Sample Value'},
-
-   };
-
-   var dataBubble = {
-    x: result.otu_ids,
-    y: result.sample_values,
-    mode: 'markers',
-    marker: {
-      size: result.sample_values,
-      color: result.otu_ids,
-      colorscale:'Viridis',
-      
-
-    },
-    text:result.otu_labels,
-    type: 'scatter',
-    labels: result.otu_labels,
-  
-
-
-   }
-
-  Plotly.newPlot('bubble',[dataBubble],layoutBubble);
-  });
-}
-
-function optionChanged(value) {
-  buildmetaData(value);
-  charts(value);
-  
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
